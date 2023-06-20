@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+  <title>Nostr Apps Demo</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@next/css/pico.min.css" />
+  <link rel="stylesheet" data-name="vs/editor/editor.main"
+    href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+
+  <script type="module" src="/assets/index.js"></script>
+  <script defer src="https://unpkg.com/alpinejs"></script>
+</head>
+
+<body class="container">
+  <nav>
+    <ul>
+      <li><b>Nostr Web Apps</b></li>
+      <li><a class="secondary" href="/index.html">Editor</a></li>
+      <li><a class="primary" href="/apps.html">Apps</a></li>
+      <li><a class="primary" href="/docs.html">Docs</a></li>
+    </ul>
+    <ul>
+      <li x-data="keypair" x-show="hasPubkey">
+        <button @click="$store.globalState.showPublishDialog = true">Publish</button>
+      </li>
+      <li x-data="profile">
+        <template x-if="!name">
+          <button class="contrast outline" @click="connect">Connect</button>
+        </template>
+        <template x-if="name">
+          <div role="button" class="contrast outline profile-view">
+            <template x-if="picture">
+              <img :src="picture" alt="Profile Picture">
+            </template>
+            <div x-text="name"></div>
+            <button class="icon contrast outline" @click="disconnect">&times;</button>
+          </div>
+        </template>
+      </li>
+      <li x-data="colorscheme">
+        <button class="contrast outline" @click="toggle">
+          <svg x-ref="svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32"
+            fill="currentColor" class="theme-toggle moon">
+            <clipPath id="theme-toggle-cutout">
+              <path d="M0-11h25a1 1 0 0017 13v30H0Z"></path>
+            </clipPath>
+            <g clip-path="url(#theme-toggle-cutout)">
+              <circle cx="16" cy="16" r="8.4"></circle>
+              <path
+                d="M18.3 3.2c0 1.3-1 2.3-2.3 2.3s-2.3-1-2.3-2.3S14.7.9 16 .9s2.3 1 2.3 2.3zm-4.6 25.6c0-1.3 1-2.3 2.3-2.3s2.3 1 2.3 2.3-1 2.3-2.3 2.3-2.3-1-2.3-2.3zm15.1-10.5c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zM3.2 13.7c1.3 0 2.3 1 2.3 2.3s-1 2.3-2.3 2.3S.9 17.3.9 16s1-2.3 2.3-2.3zm5.8-7C9 7.9 7.9 9 6.7 9S4.4 8 4.4 6.7s1-2.3 2.3-2.3S9 5.4 9 6.7zm16.3 21c-1.3 0-2.3-1-2.3-2.3s1-2.3 2.3-2.3 2.3 1 2.3 2.3-1 2.3-2.3 2.3zm2.4-21c0 1.3-1 2.3-2.3 2.3S23 7.9 23 6.7s1-2.3 2.3-2.3 2.4 1 2.4 2.3zM6.7 23C8 23 9 24 9 25.3s-1 2.3-2.3 2.3-2.3-1-2.3-2.3 1-2.3 2.3-2.3z">
+              </path>
+            </g>
+          </svg>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Before you start</h1>
+    <blockquote>⚠️ This is still a prototype. Everything can be subject to change.</blockquote>
+    <p>
+      <b>Apart from that:</b>
+      Have fun creating your nostr-based web apps! Build something awesome and share it with the world!
+    </p>
+    <p>
+      Keep the file size reasonable small. If you need large files, consider using a CDN
+      (see below: <code>Content Policy</code>)
+    </p>
+
+    <h3>Content Policy</h3>
+    <p>
+      Allowed domains are <code>unpkg.com</code>, <code>cdn.jsdelivr.net</code>,
+      <code>cdnjs.cloudflare.com</code>, <code>raw.githubusercontent.com</code>,
+      <code>cdn.skypack.dev</code>, <code>esm.sh</code> and <code>esm.run</code>.
+      Any other domain will be blocked inside of the iframe.
+    </p>
+
+    <h2>Editor</h2>
+
+    <fieldset class="grid">
+      <div>
+        <label for="language">Presets</label>
+        <select x-data="presets" @change="select">
+          <option value="">Select a preset</option>
+          <template x-for="preset in list">
+            <option :selected="selected" :value="preset.identifier" x-text="preset.identifier"></option>
+          </template>
+        </select>
+      </div>
+      <div x-data="appidentifier" x-effect="handleAppdata">
+        <label for="identifier">App Identifier</label>
+        <input x-model="identifier" type="text" id="identifier" name="identifier" placeholder="A unique name or title">
+        <small>
+          If you change the <code>identifier</code> in a published app,
+          you literally create a new app.
+        </small>
+      </div>
+      <div x-data="applist" x-init="loadMyApps">
+        <label for="apps">Published Apps</label>
+        <select @change="selectApp">
+          <option value="">Select an app</option>
+          <template x-for="app in appList">
+            <option :value="app.event_id" x-text="app.identifier"></option>
+          </template>
+        </select>
+        <small>You can edit a published app by selecting it here.</small>
+      </div>
+    </fieldset>
+
+    <fieldset class="editor-grid" x-data="monaco" x-model="value" x-modelable="$store.appdata.event.content">
+      <!-- Editor -->
+      <div class="editor monaco-editor">
+        <div x-init="mount({ tabSize: 2 })" x-effect="handleAppdata"></div>
+      </div>
+      <!-- Preview -->
+      <template x-if="value !== ''">
+        <iframe frameborder="0" class="preview" x-effect="updateIframe" sandbox="allow-forms allow-scripts" csp="
+            default-src 'self'
+              unpkg.com
+              esm.sh
+              esm.run
+              cdn.jsdelivr.net
+              cdnjs.cloudflare.com
+              raw.githubusercontent.com
+              cdn.skypack.dev;
+            script-src 'unsafe-inline';
+            style-src 'unsafe-inline';
+            img-src 'self' data:;
+            font-src 'self' data:;
+            connect-src 'self';
+            frame-src 'self';
+        "></iframe>
+      </template>
+      <template x-if="value === ''">
+        <div class="preview">
+          <div>
+            <h1>Preview</h1>
+            <p>Copy/Paste or write some <code>HTML</code> code in the editor and publish ;-)</p>
+          </div>
+        </div>
+      </template>
+    </fieldset>
+
+    <fieldset x-data="monaco">
+      <h2>Event</h2>
+      <p>
+        This is the Nostr event that will be published to the network. The event is of kind <code>31337</code>
+        and is non-standard/experimental. However, this event follows the guidelines from
+        <a href="https://github.com/nostr-protocol/nips/blob/master/31.md" target="_blank">NIP-31: Dealing with unknown
+          event kinds</a>
+        and
+        <a href="https://github.com/nostr-protocol/nips/blob/master/33.md" target="_blank">NIP-33:
+          Parameterized Replaceable Events</a>.
+      </p>
+      <div x-init="mount({ language: 'json', readOnly: true, tabSize: 2 })"
+        x-effect="setValue($store.appdata.toJSONPreview())" style="height: 300px;"></div>
+    </fieldset>
+  </main>
+
+  <dialog x-data="publishDialog" :open="open">
+    <article>
+      <h3>Select your Relays</h3>
+      <form @submit.prevent="publish">
+        <div>
+          <label>
+            <input type="checkbox" name="relays" value="wss://relay.xp.live" checked>
+            <span>wss://relay.xplive.local:7443</span>
+          </label>
+        </div>
+        <template x-for="relay in relays">
+          <div>
+            <label>
+              <input type="checkbox" :value="relay" name="relays">
+              <span x-text="relay"></span>
+            </label>
+          </div>
+        </template>
+        <button x-show="relays.length === 0" type="button" class="secondary outline" @click="loadRelays">Load your
+          relays</button>
+        <hr>
+        <div class="grid">
+          <button type="button" class="secondary outline" @click="open = false">Cancel</button>
+          <button type="submit">OK</button>
+        </div>
+      </form>
+    </article>
+  </dialog>
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+nav {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background-color: var(--pico-background-color);
+}
+
+[role="button"].profile-view {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  height: calc((var(--pico-nav-link-spacing-vertical) * 2) + (var(--pico-line-height) * 1rem) - 3px);
+  padding:
+    calc((var(--pico-nav-link-spacing-vertical) / 2) - var(--pico-border-width) * 2) calc((var(--pico-nav-link-spacing-horizontal) / 2) - var(--pico-border-height) * 2);
+  overflow: hidden;
+}
+
+.profile-view>img {
+  object-fit: cover;
+  max-height: 100%;
+  border-right: var(--pico-border-width) solid var(--pico-border-color);
+}
+
+.profile-view>button {
+  display: grid;
+  justify-content: center;
+  place-items: center;
+  place-self: stretch;
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: calc((var(--pico-nav-link-spacing-horizontal) * 2) + (var(--pico-line-height) * 1rem) - 6px);
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 1rem;
+  grid-template-areas: "editor preview";
+}
+
+.editor-grid>* {
+  --pico-border-color: var(--pico-form-element-border-color);
+  border: var(--pico-border-width) solid var(--pico-border-color);
+  border-radius: var(--pico-border-radius);
+  overflow: hidden;
+  padding: .5rem;
+}
+
+.editor {
+  background-color: var(--vscode-editor-background);
+}
+
+.editor>div {
+  height: 400px;
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--pico-background-color);
+  color: var(--pico-color);
+}
+
+svg.theme-toggle {
+  --theme-toggle-duration: .4s
+}
+
+svg.theme-toggle :first-child path {
+  transition-duration: calc(var(--theme-toggle-duration) * .6);
+  transition-property: transform, d;
+  transition-timing-function: cubic-bezier(0, 0, .5, 1)
+}
+
+svg.theme-toggle g circle,
+svg.theme-toggle g path {
+  transform-origin: center;
+  transition: transform calc(var(--theme-toggle-duration) * .65) cubic-bezier(0, 0, 0, 1.25) calc(var(--theme-toggle-duration) * .35)
+}
+
+svg.theme-toggle.moon g circle {
+  transform: scale(1.4);
+  transition-delay: 0s
+}
+
+svg.theme-toggle.moon g path {
+  transform: scale(.75);
+  transition-delay: 0s
+}
+
+svg.theme-toggle.moon :first-child path {
+  d: path("M-9 3h25a1 1 0 0017 13v30H0Z");
+  transition-delay: calc(var(--theme-toggle-duration) * .4);
+  transition-timing-function: cubic-bezier(0, 0, 0, 1.25)
+}
+
+@supports not (d:path("")) {
+  svg.theme-toggle.moon :first-child path {
+    transform: translate3d(-9px, 14px, 0)
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "javascript.format.enable": true,
+  "json.format.enable": true,
+  "html.format.enable": true,
+  "files.autoSave": "afterDelay",
+  "editor.formatOnSave": true,
+  "liveServer.settings.port": 5502,
+  "cSpell.enabled": false
+}

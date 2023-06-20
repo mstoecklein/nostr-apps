@@ -168,8 +168,8 @@
       <form @submit.prevent="publish">
         <div>
           <label>
-            <input type="checkbox" name="relays" value="wss://relay.xp.live" checked>
-            <span>wss://relay.xplive.local:7443</span>
+            <input type="checkbox" name="relays" value="wss://relay.xp.live" checked disabled>
+            <span>wss://relay.xp.live</span>
           </label>
         </div>
         <template x-for="relay in relays">

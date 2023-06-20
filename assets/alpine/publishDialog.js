@@ -15,7 +15,7 @@ export default function () {
     },
 
     async loadRelays() {
-      this.relays = [...new Set([...this.$store.profile.writeRelay])];
+      this.relays = [...new Set([...this.$store.profile.writeRelays])];
     },
 
     async publish() {

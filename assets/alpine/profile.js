@@ -24,9 +24,6 @@ export default function () {
         this.$store.keypair.save({ pubkey, secret: null });
         this.$store.profile.saveRelays(relays);
 
-        console.log("pubkey", pubkey);
-        console.log("relays", relays);
-
         this.subscriberId = poolctl.subscribe(
           [0],
           ({ event }) => {
@@ -40,7 +37,7 @@ export default function () {
 
         poolctl.request([{ kinds: [0], authors: [pubkey] }], {
           id: this.subscriberId,
-          relays: getReadRelays(relays),
+          relays: this.$store.profile.readRelays,
         });
       } else {
         alert("You need to install a Nostr extension to use this feature.");

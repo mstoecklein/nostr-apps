@@ -24,21 +24,16 @@ export default function () {
         this.$store.keypair.save({ pubkey, secret: null });
         this.$store.profile.saveRelays(relays);
 
-        this.subscriberId = poolctl.subscribe(
-          [0],
+        this.subscriberId = poolctl.request(
+          [{ kinds: [0], authors: [pubkey] }],
+          this.$store.profile.readRelays,
           ({ event }) => {
             const { name, about, picture } = JSON.parse(event?.content || "{}");
             this.$store.profile.saveProfile({ name, about, picture });
             this.$store.keypair.pubkey = event.pubkey;
             this.$store.keypair.secret = null;
-          },
-          "xp:profile"
+          }
         );
-
-        poolctl.request([{ kinds: [0], authors: [pubkey] }], {
-          id: this.subscriberId,
-          relays: this.$store.profile.readRelays,
-        });
       } else {
         alert("You need to install a Nostr extension to use this feature.");
       }

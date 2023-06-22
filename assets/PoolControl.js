@@ -16,23 +16,16 @@ function sendRequest(request) {
 
 /**
  * Subscribe to events from the pool worker
- * @param {number[]} kinds - array of kinds to subscribe to
  * @param {({id: string; type: 'event' | 'eose'; event: any}) => void} callback
- * @param {string} [subscriberIdPrefix] - optional prefix for the subscriberId
+ * @param {string} [predefinedId] - optional predefined id
  * @returns {string} subscriberId
  */
-export function subscribe(kinds, callback, subscriberIdPrefix = null) {
-  if (!Array.isArray(kinds)) {
-    throw new Error("kinds must be an array");
-  }
-  if (kinds.some((kind) => typeof kind !== "number")) {
-    throw new Error("kinds must be an array of numbers");
-  }
+export function subscribe(callback, predefinedId = null) {
   if (typeof callback !== "function") {
     throw new Error("callback must be a function");
   }
-  const subscriberId = getId(subscriberIdPrefix);
-  poolCallbacks.set(subscriberId, { kinds: [...(kinds ?? [])], callback });
+  const subscriberId = predefinedId ?? getId();
+  poolCallbacks.set(subscriberId, callback);
   return subscriberId;
 }
 
@@ -45,29 +38,48 @@ export function unsubscribe(subscriberId) {
   poolHashes.delete(subscriberId);
 }
 
-export function request(filters, { relays, id, verb, skipVerification } = {}) {
+export function request(
+  filters,
+  relays,
+  callback,
+  { verb, skipVerification, customId } = {}
+) {
   if (!filters || (!Array.isArray(filters) && filters.length > 0)) {
     throw new Error("Filters must be an array and not empty!");
   }
   if (!relays || !relays.length) {
     throw new Error("Can't request without relays!");
   }
+
+  const id = subscribe(callback, customId);
   sendRequest({
     type: "req",
     relays: [...new Set([...relays])],
     params: { filters, options: { id, verb, skipVerification } },
   });
+  return id;
 }
 
-export function count(filters, { relays, id, verb, skipVerification } = {}) {
+export function count(
+  filters,
+  relays,
+  callback,
+  { verb, skipVerification, customId } = {}
+) {
+  if (!filters || (!Array.isArray(filters) && filters.length > 0)) {
+    throw new Error("Filters must be an array and not empty!");
+  }
   if (!relays || !relays.length) {
     throw new Error("Can't count without relays!");
   }
+
+  const id = subscribe(callback, customId);
   sendRequest({
     type: "count",
     relays: [...new Set([...relays])],
     params: { filters, options: { id, verb, skipVerification } },
   });
+  return id;
 }
 
 export function publish(event, { relays } = {}) {
@@ -98,8 +110,8 @@ export default function PoolControl() {
     if ("event" === type) {
       eventPolicy.run(event);
 
-      const { kinds, callback } = poolCallbacks.get(id);
-      if (kinds.length > 0 && kinds.includes(event.kind) && callback) {
+      const callback = poolCallbacks.get(id);
+      if (callback) {
         callback(data, [...eventPolicy.events.values()]);
       }
 

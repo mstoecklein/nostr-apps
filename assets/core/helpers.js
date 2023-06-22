@@ -6,11 +6,10 @@ let currentCount = 0;
 
 /**
  * Generates a unique ID
- * @param {string} [prefix] Prefix to prepend to the ID
  * @param {number} padding Amount of zeros to pad the count with
  * @returns {string} A unique ID
  */
-export function getId(prefix = null, padding = 1) {
+export function getId(padding = 1) {
   const now = Date.now();
   if (now === currentTime) {
     currentCount++;
@@ -18,10 +17,7 @@ export function getId(prefix = null, padding = 1) {
     currentTime = now;
     currentCount = 0;
   }
-  return (
-    (prefix ? prefix + ":" : "") +
-    `${now}${currentCount.toString().padStart(padding, "0")}`
-  );
+  return `${now}${currentCount.toString().padStart(padding, "0")}`;
 }
 
 /**

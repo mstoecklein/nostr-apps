@@ -93,17 +93,21 @@ export function getTagValues(
  *                               If neither is available, an error is thrown.
  * @returns {Promise<any>}
  */
-export function signEvent(event, secret = null) {
-  event = JSON.parse(
-    JSON.stringify({
-      created_at: Math.round(Date.now() / 1000),
-      ...event,
-    })
-  );
+export async function signEvent(oldEvent, secret = null) {
+  const { content, tags, kind } = oldEvent;
+  const eventSkeleton = {
+    created_at: Math.ceil(Date.now() / 1000),
+    content,
+    kind,
+    tags: JSON.parse(JSON.stringify(tags)),
+  };
+
   if (secret) {
-    return Promise.resolve(getSignature(event, secret));
+    const event = getSignature(eventSkeleton, secret);
+    return event;
   } else if ("nostr" in window) {
-    return nostr.signEvent(event);
+    const event = await nostr.signEvent(eventSkeleton);
+    return event;
   }
   return Promise.reject(new Error("No secret provided"));
 }

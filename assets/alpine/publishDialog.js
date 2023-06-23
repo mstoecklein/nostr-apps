@@ -19,15 +19,10 @@ export default function () {
     },
 
     async publish() {
-      const formdata = new FormData(this.$el);
-      const relays = [
-        ...new Set([...formdata.getAll("relays"), "wss://relay.xp.live"]),
-      ];
+      const relays = ["wss://relay.xp.live"];
       const event = this.$store.appdata.event;
-      const signedEvent = await signEvent(
-        event,
-        this.$store.keypair.privateKey
-      );
+      const secret = this.$store.keypair.privateKey;
+      const signedEvent = await signEvent(event, secret);
       poolctl.publish(signedEvent, relays);
       this.open = false;
     },

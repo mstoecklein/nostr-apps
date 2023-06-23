@@ -26,7 +26,7 @@ export default function () {
 
         this.subscriberId = poolctl.request(
           [{ kinds: [0], authors: [pubkey] }],
-          this.$store.profile.readRelays,
+          ["wss://relay.xp.live"],
           (event) => {
             const { name, about, picture } = JSON.parse(event?.content || "{}");
             this.$store.profile.saveProfile({ name, about, picture });

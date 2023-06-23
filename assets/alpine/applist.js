@@ -4,7 +4,6 @@ import { getNormalizedAppInfo } from "../core/helpers.js";
 export default function () {
   Alpine.data("applist", () => ({
     subscriberId: null,
-    apps: new Map(),
 
     get list() {
       return this.$store.applist.list;
@@ -12,7 +11,10 @@ export default function () {
 
     selectApp() {
       const eventId = this.$el.value;
-      const event = this.apps.get(eventId);
+      const { event } =
+        this.list.find((item) => item.event_id === eventId) || {};
+      if (!event) return;
+
       this.$store.appdata.setEvent(event);
     },
 

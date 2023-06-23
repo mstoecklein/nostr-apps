@@ -1,6 +1,5 @@
-import { nip19 } from "https://esm.sh/nostr-tools@1.12.0";
 import * as poolctl from "../PoolControl.js";
-import { getLanguage, getTagValue } from "../core/helpers.js";
+import { getNormalizedAppInfo } from "../core/helpers.js";
 
 export default function () {
   Alpine.data("applist", () => ({
@@ -8,30 +7,7 @@ export default function () {
     apps: new Map(),
 
     get list() {
-      return Array.from(this.apps.values()).map((event) => {
-        const identifier = getTagValue(event, "d");
-        const type = getTagValue(event, "type");
-        const language = getLanguage(type);
-        const name = getTagValue(event, "name") ?? identifier;
-        const summary = getTagValue(event, "summary") ?? "";
-        const naddr = nip19.naddrEncode({
-          identifier,
-          pubkey: event.pubkey,
-          kind: event.kind,
-          relays: ["wss://relay.xp.live"],
-        });
-        return {
-          event_id: event.id,
-          type,
-          language,
-          identifier,
-          name,
-          summary,
-          naddr,
-          content: event.content,
-          event,
-        };
-      });
+      return this.$store.applist.list;
     },
 
     selectApp() {
@@ -41,14 +17,22 @@ export default function () {
     },
 
     async loadMyApps() {
-      const relays = this.$store.profile.writeRelays ?? [];
-      this.subscriberId = poolctl.request(
+      poolctl.request(
         [{ kinds: [31337], authors: [this.$store.keypair.pubkey] }],
-        [...new Set(relays)],
-        (_, list) => {
-          this.apps = new Map(list.map((event) => [event.id, event]));
+        ["wss://relay.xp.live"],
+        (_event, list) => {
+          this.$store.applist.setList(list);
         },
+        { closeOnEose: true }
       );
     },
   }));
+
+  Alpine.store("applist", {
+    list: [],
+
+    setList(list) {
+      this.list = Array.from(list).map(getNormalizedAppInfo);
+    },
+  });
 }

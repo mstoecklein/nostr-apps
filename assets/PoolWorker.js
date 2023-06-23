@@ -39,12 +39,12 @@ onconnect = (e) => {
       switch (type) {
         case "req": {
           const { filters, options } = params;
-          createSub(relays, filters, { verb: "REQ", ...options });
+          createSub(relays, filters, { ...options, verb: "REQ" });
           break;
         }
         case "count": {
           const { filters, options } = params;
-          createSub(relays, filters, { verb: "COUNT", ...options });
+          createSub(relays, filters, { ...options, verb: "COUNT" });
           break;
         }
         case "unsub": {

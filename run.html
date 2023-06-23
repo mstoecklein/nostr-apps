@@ -4,16 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-  <title>Nostr Apps Demo</title>
+  <title>App View</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@next/css/pico.min.css" />
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.css">
-  <link rel="stylesheet" href="https://unpkg.com/awesomplete@1.1.5/awesomplete.base.css">
   <link rel="stylesheet" href="/assets/styles.css">
 
-  <script type="module" src="/assets/apps.js"></script>
-  <script src="https://unpkg.com/awesomplete@1.1.5/awesomplete.js" async></script>
+  <script type="module" src="/assets/run.js"></script>
   <script defer src="https://unpkg.com/alpinejs"></script>
 </head>
 
@@ -26,8 +24,8 @@
       <li><a class="primary" href="/docs.html">Docs</a></li>
     </ul>
     <ul>
-      <li x-data="appdiscovery">
-        <input type="search" list="discovery-list" placeholder="Discover" x-init="setupAwesomplete" @input.debounce.500ms="onInput" />
+      <li>
+        <input type="search" placeholder="Search" aria-label="Search" />
       </li>
       <li x-data="profile">
         <template x-if="!name">
@@ -62,18 +60,35 @@
     </ul>
   </nav>
 
-  <main>
-    <div x-data="applist" x-init="loadMyApps">
-      <h1>My Apps</h1>
-      <ul>
-        <template x-for="app in list">
-          <li>
-            <a :href="`run.html?app=${app.naddr}`" x-text="app.name ?? app.identifier"></a>
-            <span class="badge contrast" x-text="app.language"></span>
-          </li>
-        </template>
-      </ul>
-    </div>
+  <main x-data="appview">
+    <template x-if="app">
+      <div>
+        <iframe frameborder="0" x-init="render" @keypress.window="onKeypress" sandbox="allow-forms allow-scripts" csp="
+          default-src 'self'
+            unpkg.com
+            esm.sh
+            esm.run
+            cdn.jsdelivr.net
+            cdnjs.cloudflare.com
+            raw.githubusercontent.com
+            cdn.skypack.dev;
+          script-src 'unsafe-inline';
+          style-src 'unsafe-inline';
+          img-src 'self' data:;
+          font-src 'self' data:;
+          connect-src 'self';
+          frame-src 'self';
+        "></iframe>
+        <nav>
+          <ul></ul>
+          <ul>
+            <li>
+              <button class="secondary" @click="enableFullscreen">Fullscreen</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </template>
   </main>
 </body>
 

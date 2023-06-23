@@ -1,4 +1,4 @@
-import { getSignature } from "https://esm.sh/nostr-tools@1.12.0";
+import { getSignature, nip19 } from "https://esm.sh/nostr-tools@1.12.0";
 import mime from "https://esm.sh/mime@3.0.0/lite";
 
 let currentTime = 0;
@@ -106,4 +106,29 @@ export function signEvent(event, secret = null) {
     return nostr.signEvent(event);
   }
   return Promise.reject(new Error("No secret provided"));
+}
+
+export function getNormalizedAppInfo(event) {
+  const identifier = getTagValue(event, "d");
+  const type = getTagValue(event, "type");
+  const language = getLanguage(type);
+  const name = getTagValue(event, "name") ?? identifier;
+  const summary = getTagValue(event, "summary") ?? "";
+  const naddr = nip19.naddrEncode({
+    identifier,
+    pubkey: event.pubkey,
+    kind: event.kind,
+    relays: ["wss://relay.xp.live"],
+  });
+  return {
+    event_id: event.id,
+    type,
+    language,
+    identifier,
+    name,
+    summary,
+    naddr,
+    content: event.content,
+    event,
+  };
 }

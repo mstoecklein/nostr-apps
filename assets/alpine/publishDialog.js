@@ -28,7 +28,7 @@ export default function () {
         event,
         this.$store.keypair.privateKey
       );
-      poolctl.publish(signedEvent, { relays });
+      poolctl.publish(signedEvent, relays);
       this.open = false;
     },
   }));

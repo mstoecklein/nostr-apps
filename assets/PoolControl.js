@@ -6,6 +6,61 @@ const poolHashes = new Map();
 const requestQueue = [];
 let port = null;
 
+/**
+ * @name NostrEvent
+ * @typedef {object} NostrEvent
+ * @property {number} kind
+ * @property {string} content
+ * @property {number} created_at
+ * @property {string[][]} tags
+ * @property {string} [id] - will be created on signEvent
+ * @property {string} [sig] - will be created on signEvent
+ */
+
+/**
+ * @name NostrFilter
+ * @typedef {object} NostrFilter
+ * @property {number[]} [kinds]
+ * @property {string[]} [ids]
+ * @property {string[]} [authors]
+ * @property {string} [since]
+ * @property {string} [until]
+ * @property {number} [limit]
+ * @property {string} [search]
+ * @property {string[]} [#e] - event reference
+ * @property {string[]} [#p] - pubkey reference
+ * @property {string[]} [#d] - identifier for parametrized replaceable event
+ * @property {string[]} [#a] - parametrized replaceable event reference
+ * @property {string[]} [#t] - hashtag
+ */
+
+/**
+ * @name SubscribeCallbackData
+ * @typedef {object} SubscribeCallbackData
+ * @property {'event'|'eose'} type
+ * @property {NostrEvent} event
+ */
+
+/**
+ * @name EventCallback
+ * @typedef {(data: SubscribeCallbackData, list: NostrEvent[]) => void} EventCallback
+ */
+
+/**
+ * @name EoseCallback
+ * @typedef {(list: NostrEvent[]) => void} EoseCallback
+ */
+
+/**
+ * @name RequestOptions
+ * @typedef {object} RequestOptions
+ * @property {string} [subscriberId] - id of the subscriber
+ * @property {boolean} [skipVerification] - skip verification of the data
+ * @property {boolean} [closeOnEose] - close the subscription when the end of stream is reached
+ * @property {EventCallback} [callback] - callback function for each event
+ * @property {EoseCallback} [eoseCallback] - callback function for end of stored events
+ */
+
 function sendRequest(request) {
   if (!port) {
     requestQueue.push(request);
@@ -15,20 +70,57 @@ function sendRequest(request) {
 }
 
 /**
- * Subscribe to events from the pool worker
- * @param {({id: string; type: 'event' | 'eose'; event: any}) => void} callback
- * @param {string} [predefinedId] - optional predefined id
- * @returns {string} subscriberId
+ * @param {RequestOptions} options
+ * @returns {RequestOptions}
  */
-export function subscribe(callback, predefinedId = null) {
-  if (typeof callback !== "function") {
-    throw new Error("callback must be a function");
+function getRequestOptions(options) {
+  let callback, subscriberId, skipVerification, closeOnEose;
+  if ("function" === typeof options) {
+    callback = options;
+  } else if (options) {
+    callback = options.callback;
+    subscriberId = options.subscriberId;
+    skipVerification = options.skipVerification;
+    closeOnEose = options.closeOnEose;
   }
-  const subscriberId = predefinedId ?? getId();
-  poolCallbacks.set(subscriberId, callback);
-  return subscriberId;
+  return { callback, subscriberId, skipVerification, closeOnEose };
 }
 
+/**
+ * Subscribe to events from the pool worker
+ * @param {EventCallback|RequestOptions} callbackOrOptions
+ * @returns {string} subscriberId
+ */
+export function subscribe(callbackOrOptions) {
+  let options = {};
+  if ("function" === typeof callbackOrOptions) {
+    options.callback = callbackOrOptions;
+  } else if (callbackOrOptions && typeof callbackOrOptions === "object") {
+    const entries = Object.entries(callbackOrOptions);
+    for (const [key, value] of entries) {
+      if (value !== undefined) {
+        options[key] = value;
+      }
+    }
+  }
+
+  let id = options.subscriberId;
+  if (!id) {
+    id = options.subscriberId = getId();
+  }
+  if (poolCallbacks.has(id)) {
+    const oldOptions = poolCallbacks.get(id);
+    poolCallbacks.set(id, { ...oldOptions, ...options });
+  } else {
+    poolCallbacks.set(id, options);
+  }
+  return id;
+}
+
+/**
+ * Unsubscribe from events from the pool worker
+ * @param {string} subscriberId - id of the subscriber
+ */
 export function unsubscribe(subscriberId) {
   port.postMessage({
     type: "unsub",
@@ -38,12 +130,14 @@ export function unsubscribe(subscriberId) {
   poolHashes.delete(subscriberId);
 }
 
-export function request(
-  filters,
-  relays,
-  callback,
-  { verb, skipVerification, customId } = {}
-) {
+/**
+ * Request data from the relay pool
+ * @param {NostrFilter[]} filters - see https://github.com/nostr-protocol/nips/blob/master/01.md
+ * @param {string[]} relays - list of relays to request data from
+ * @param {RequestOptions} callbackOrOptions
+ * @returns {string} subscriberId
+ */
+export function request(filters, relays, callbackOrOptions) {
   if (!filters || (!Array.isArray(filters) && filters.length > 0)) {
     throw new Error("Filters must be an array and not empty!");
   }
@@ -51,21 +145,25 @@ export function request(
     throw new Error("Can't request without relays!");
   }
 
-  const id = subscribe(callback, customId);
+  const options = getRequestOptions(callbackOrOptions);
+  const { skipVerification } = options;
+  const id = subscribe(options);
   sendRequest({
     type: "req",
     relays: [...new Set([...relays])],
-    params: { filters, options: { id, verb, skipVerification } },
+    params: { filters, options: { id, skipVerification } },
   });
   return id;
 }
 
-export function count(
-  filters,
-  relays,
-  callback,
-  { verb, skipVerification, customId } = {}
-) {
+/**
+ * Request count of data found by the filters
+ * @param {any[]} filters - see https://github.com/nostr-protocol/nips/blob/master/01.md
+ * @param {string[]} relays - list of relays to request data from
+ * @param {EventCallback|RequestOptions} [callbackOrOptions] - optional callback or options
+ * @returns {string} subscriberId
+ */
+export function count(filters, relays, callbackOrOptions) {
   if (!filters || (!Array.isArray(filters) && filters.length > 0)) {
     throw new Error("Filters must be an array and not empty!");
   }
@@ -73,16 +171,23 @@ export function count(
     throw new Error("Can't count without relays!");
   }
 
-  const id = subscribe(callback, customId);
+  const options = getRequestOptions(callbackOrOptions);
+  const { skipVerification } = options;
+  const id = subscribe(options);
   sendRequest({
     type: "count",
     relays: [...new Set([...relays])],
-    params: { filters, options: { id, verb, skipVerification } },
+    params: { filters, options: { id, skipVerification } },
   });
   return id;
 }
 
-export function publish(event, { relays } = {}) {
+/**
+ * Publish an event to the relay pool
+ * @param {NostrEvent} event - see https://github.com/nostr-protocol/nips/tree/master
+ * @param {string[]} relays - list of relays to publish the event to
+ */
+export function publish(event, relays) {
   if (!relays || !relays.length) {
     throw new Error("Can't publish without relays!");
   }
@@ -93,7 +198,7 @@ export function publish(event, { relays } = {}) {
   });
 }
 
-export default function PoolControl() {
+export default function createPoolControl() {
   const sharedPoolWorker = new SharedWorker("./assets/PoolWorker.js", {
     type: "module",
     name: "shared-pool-worker",
@@ -109,10 +214,14 @@ export default function PoolControl() {
     const { id, type, event } = data;
     if ("event" === type) {
       eventPolicy.run(event);
+      console.log(`%c${type}(${id}):`, "font-weight: 700", event);
 
-      const callback = poolCallbacks.get(id);
+      const { callback } = poolCallbacks.get(id);
       if (callback) {
-        callback(data, [...eventPolicy.events.values()]);
+        console.log(
+          `Callback for subscriber(${id}) called with ${eventPolicy.events.size} events`
+        );
+        callback(event, [...eventPolicy.events?.values()]);
       }
 
       // update app list if hash changed
@@ -128,9 +237,19 @@ export default function PoolControl() {
         );
         poolHashes.set(id, eventPolicy.hash);
       }
-    } else if ("eose" === type) {
-      console.log("eose", event);
-      // TODO: handle eose event
+    }
+    if ("eose" === type) {
+      const { closeOnEose, eoseCallback } = poolCallbacks.get(id) || {};
+      if (eoseCallback) {
+        console.log(
+          `eose callback for subscriber(${id}) called with ${eventPolicy.events.size} events`
+        );
+        eoseCallback([...eventPolicy.events?.values()]);
+      }
+      if (closeOnEose) {
+        console.log(`Closing subscriber(${id}) on eose`);
+        unsubscribe(id);
+      }
     }
   });
 

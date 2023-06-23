@@ -104,7 +104,7 @@
         <label for="apps">Published Apps</label>
         <select @change="selectApp">
           <option value="">Select an app</option>
-          <template x-for="app in appList">
+          <template x-for="app in list">
             <option :value="app.event_id" x-text="app.identifier"></option>
           </template>
         </select>

@@ -67,6 +67,9 @@ function sendRequest(request) {
     return;
   }
   port.postMessage(request);
+  if (request.type === "pub" && request.params?.event) {
+    eventPolicy.run(request.params.event);
+  }
 }
 
 /**
@@ -188,6 +191,11 @@ export function count(filters, relays, callbackOrOptions) {
  * @param {string[]} relays - list of relays to publish the event to
  */
 export function publish(event, relays) {
+  if (event instanceof Promise) {
+    event
+      .then((event) => publish(event, relays))
+      .catch((error) => console.error(error));
+  }
   if (!relays || !relays.length) {
     throw new Error("Can't publish without relays!");
   }

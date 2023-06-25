@@ -27,7 +27,8 @@
     </ul>
     <ul>
       <li x-data="appdiscovery">
-        <input type="search" list="discovery-list" placeholder="Discover" x-init="setupAwesomplete" @input.debounce.500ms="onInput" />
+        <input type="search" list="discovery-list" placeholder="Discover" x-init="setupAwesomplete"
+          @input.debounce.500ms="onInput" @click="open" @awesomplete-selectcomplete="onSelect" />
       </li>
       <li x-data="profile">
         <template x-if="!name">
@@ -70,6 +71,7 @@
           <li>
             <a :href="`run.html?app=${app.naddr}`" x-text="app.name ?? app.identifier"></a>
             <span class="badge contrast" x-text="app.language"></span>
+            <button x-data="deletion" x-modelable="deletable" x-model="app.event" @click="onDelete">Delete</button>
           </li>
         </template>
       </ul>

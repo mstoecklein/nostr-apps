@@ -7,9 +7,10 @@ import monaco from "./alpine/monaco.js";
 import presets from "./alpine/presets.js";
 import profile from "./alpine/profile.js";
 import publishDialog from "./alpine/publishDialog.js";
+import appdiscovery from "./alpine/appdiscovery.js";
+import deletion from "./alpine/deletion.js";
 
 import poolSetup from "./PoolControl.js";
-import appdiscovery from "./alpine/appdiscovery.js";
 poolSetup();
 
 globalThis.addEventListener("alpine:init", () => {
@@ -23,6 +24,7 @@ globalThis.addEventListener("alpine:init", () => {
   appidentifier();
   appdiscovery();
   publishDialog();
+  deletion();
 
   Alpine.store("globalState", {
     showPublishDialog: false,

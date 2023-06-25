@@ -1,4 +1,5 @@
 import * as poolctl from "../PoolControl.js";
+import eventPolicy from "../core/EventPolicy.js";
 import { getNormalizedAppInfo } from "../core/helpers.js";
 
 export default function () {
@@ -6,7 +7,8 @@ export default function () {
     subscriberId: null,
 
     get list() {
-      return this.$store.applist.list;
+      const list = this.$store.applist.list;
+      return list;
     },
 
     selectApp() {
@@ -22,9 +24,7 @@ export default function () {
       poolctl.request(
         [{ kinds: [31337], authors: [this.$store.keypair.pubkey] }],
         ["wss://relay.xp.live"],
-        (_event, list) => {
-          this.$store.applist.setList(list);
-        },
+        () => this.$store.applist.update(),
         { closeOnEose: true }
       );
     },
@@ -35,6 +35,12 @@ export default function () {
 
     setList(list) {
       this.list = Array.from(list).map(getNormalizedAppInfo);
+    },
+
+    update() {
+      this.list = Array.from(eventPolicy.events.values()).map(
+        getNormalizedAppInfo
+      );
     },
   });
 }

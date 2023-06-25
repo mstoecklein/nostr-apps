@@ -21,7 +21,7 @@ export default function () {
     async publish() {
       const relays = ["wss://relay.xp.live"];
       const event = this.$store.appdata.event;
-      const secret = this.$store.keypair.privateKey;
+      const secret = this.$store.keypair.secret;
       const signedEvent = await signEvent(event, secret);
       poolctl.publish(signedEvent, relays);
       this.open = false;

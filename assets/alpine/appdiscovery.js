@@ -6,6 +6,8 @@ const nip05Pattern =
   /^[a-z0-9][a-z0-9-_.]+@[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/i;
 
 export default function () {
+  const MIN_CHARS = 2;
+
   Alpine.data("appdiscovery", () => ({
     awesomplete: null,
     query: "",
@@ -13,13 +15,30 @@ export default function () {
 
     setupAwesomplete() {
       this.awesomplete = new Awesomplete(this.$el, {
-        minChars: 2,
+        minChars: MIN_CHARS,
         maxItems: 10,
         autoFirst: true,
-        filter(text, input) {
+
+        filter() {
           return true;
         },
+
+        data(item, input) {
+          console.log("data", item, input);
+          return { label: item, value: item.name };
+        },
+
+        item(text, input) {
+          console.log("item", text, input);
+          return Awesomplete.ITEM(text.value, input.match(/[^,]*$/)[0]);
+        },
       });
+    },
+
+    open() {
+      if (this.$el.value?.trim().length >= MIN_CHARS) {
+        this.awesomplete.open();
+      }
     },
 
     async onInput() {
@@ -32,10 +51,7 @@ export default function () {
           (_event, list) => {
             this.list = Array.from(list).map(getNormalizedAppInfo);
             if (this.awesomplete) {
-              this.awesomplete.list = this.list.map((app) => ({
-                label: app.name,
-                value: app.identifier,
-              }));
+              this.awesomplete.list = this.list;
             }
           },
           { closeOnEose: true }
@@ -51,16 +67,14 @@ export default function () {
         poolctl.request(
           [{ kinds: [31337], authors: [pubkey] }],
           ["wss://relay.xp.live"],
-          (_event, list) => {
-            this.$store.applist.setList(list);
-          },
+          () => this.$store.applist.update(),
           { closeOnEose: true }
         );
       }
     },
 
-    onSelect(app) {
-      console.log(app);
+    onSelect() {
+      location.href = `run.html?app=${this.$event.text.label.naddr}`;
     },
   }));
 }

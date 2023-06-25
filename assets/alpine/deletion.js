@@ -5,6 +5,10 @@ export default function () {
   Alpine.data("deletion", () => ({
     deletable: null,
 
+    get isDeletable() {
+      return this.deletable?.pubkey === this.$store.keypair.pubkey;
+    },
+
     async onDelete() {
       if (!this.deletable) return;
       const name = getTagValue(

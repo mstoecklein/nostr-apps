@@ -71,7 +71,8 @@
           <li>
             <a :href="`run.html?app=${app.naddr}`" x-text="app.name ?? app.identifier"></a>
             <span class="badge contrast" x-text="app.language"></span>
-            <button x-data="deletion" x-modelable="deletable" x-model="app.event" @click="onDelete">Delete</button>
+            <button x-data="deletion" x-show="isDeletable" x-modelable="deletable" x-model="app.event"
+              @click="onDelete">Delete</button>
           </li>
         </template>
       </ul>

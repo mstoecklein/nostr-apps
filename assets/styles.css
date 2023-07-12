@@ -16,6 +16,36 @@ nav {
   overflow: hidden;
 }
 
+[role="list"] {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-radius: var(--pico-border-radius);
+}
+
+[role="listitem"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--pico-nav-link-spacing-vertical) var(--pico-nav-link-spacing-horizontal);
+  margin: 0;
+  border: var(--pico-border-width) solid var(--pico-border-color);
+  background-color: var(--pico-background-color);
+  color: var(--pico-color);
+}
+
+[role="listitem"]:first-of-type {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+[role="listitem"]:last-of-type {
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
 .profile-view>img {
   object-fit: cover;
   max-height: 100%;
@@ -104,9 +134,6 @@ svg.theme-toggle.moon :first-child path {
 }
 
 .badge {
-  --pico-background-color: var(--pico-primary-background);
-  --pico-border-color: var(--pico-primary-border);
-  --pico-color: var(--pico-primary-inverse);
   --spacing-horizontal: calc(var(--pico-spacing) * 0.25);
   --spacing-vertical: calc(var(--pico-spacing) * 0.05);
 
@@ -121,29 +148,55 @@ svg.theme-toggle.moon :first-child path {
   vertical-align: calc((var(--spacing-vertical) * 2));
 }
 
-.badge.secondary {
+[role="listitem"], .badge {
+  --pico-background-color: var(--pico-primary-background);
+  --pico-border-color: var(--pico-primary-border);
+  --pico-color: var(--pico-primary-inverse);
+}
+
+:is([role="listitem"], .badge).secondary {
   --pico-background-color: var(--pico-secondary-background);
   --pico-border-color: var(--pico-secondary-border);
   --pico-color: var(--pico-secondary-inverse);
 }
 
-.badge.contrast {
+:is([role="listitem"], .badge).contrast {
   --pico-background-color: var(--pico-contrast-background);
   --pico-border-color: var(--pico-contrast-border);
   --pico-color: var(--pico-contrast-inverse);
 }
 
-.badge.outline {
+:is([role="listitem"], .badge).outline {
   --pico-background-color: transparent;
   --pico-color: var(--pico-primary);
 }
 
-.badge.outline.secondary {
+:is([role="listitem"], .badge).outline.secondary {
   --pico-color: var(--pico-secondary);
 }
 
-.badge.outline.contrast {
+:is([role="listitem"], .badge).outline.contrast {
   --pico-color: var(--pico-contrast);
+}
+
+.right {
+  text-align: right;
+}
+
+.left {
+  text-align: left;
+}
+
+.center {
+  text-align: center;
+}
+
+.justify {
+  text-align: justify;
+}
+
+button.small {
+  padding: 0.25rem 0.5rem;
 }
 
 @supports (transform: scale(0)) {
@@ -203,6 +256,7 @@ nav .awesomplete>ul {
   border-top-left-radius: var(--pico-border-radius);
   border-top-right-radius: var(--pico-border-radius);
 }
+
 .awesomplete>ul>li:last-of-type {
   border-bottom-left-radius: var(--pico-border-radius);
   border-bottom-right-radius: var(--pico-border-radius);
@@ -231,6 +285,30 @@ nav .awesomplete>ul {
 .awesomplete li[aria-selected="true"] mark {
   background-color: var(--pico-background-color);
   color: var(--pico-color);
+}
+
+.appview {
+  height: 100%;
+}
+
+.appview>body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+}
+
+.appview main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0;
+}
+
+.appview main>div:first-of-type {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 @supports not (d:path("")) {

@@ -66,13 +66,17 @@
   <main>
     <div x-data="applist" x-init="loadMyApps">
       <h1>My Apps</h1>
-      <ul>
+      <ul role="list">
         <template x-for="app in list">
-          <li>
-            <a :href="`run.html?app=${app.naddr}`" x-text="app.name ?? app.identifier"></a>
-            <span class="badge contrast" x-text="app.language"></span>
-            <button x-data="deletion" x-show="isDeletable" x-modelable="deletable" x-model="app.event"
-              @click="onDelete">Delete</button>
+          <li role="listitem" class="grid secondary outline">
+            <div>
+              <a :href="`run.html?app=${app.naddr}`" x-text="app.name ?? app.identifier"></a>
+              <span class="badge contrast" x-text="app.language"></span>
+            </div>
+            <div>
+              <button class="small contrast" x-data="deletion" x-show="isDeletable" x-modelable="deletable" x-model="app.event"
+                @click="onDelete">Delete</button>
+            </div>
           </li>
         </template>
       </ul>

@@ -159,24 +159,3 @@ A replaceable event that contains the web app content (HTML Website).
   "sig": "<SIGNATURE>"
 }
 ```
-
-### Library Event
-
-A regular immutable event. Every update is a new event, so we can use it to version content. I think of utilizing the `nostr:` protocol similar to how it's been used in the [NIP-23 Long-form Content](https://github.com/nostr-protocol/nips/blob/master/23.md) draft. For our use-case we are using it for ESM imports and resource targets for scripts, styles and other assets.
-
-```json
-{
-  "kind": 1337,
-  "created_at": 1234567890,
-  "content": "console.log('Hello World!');",
-  "tags": [
-    ["type", "application/javascript"],
-    ["name", "Hello World!"],
-    ["description", "An example Nostr app."],
-    ["alt", "An example Nostr app."],
-  ],
-  "pubkey": "<PUBLIC KEY>",
-  "id": "<ID>",
-  "sig": "<SIGNATURE>"
-}
-```

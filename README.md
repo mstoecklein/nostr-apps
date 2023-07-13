@@ -84,7 +84,7 @@ We keep it as simple as possible. Here are the events we are using:
 The iframe website will ask for events from the host website. The host website will send events to the iframe website.
 
 Subscribe:
-````js
+```js
 parent.postMessage({
   "type": "sub",
   "id": "<SUBSCRIBER ID>",

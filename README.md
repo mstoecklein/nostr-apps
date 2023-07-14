@@ -6,6 +6,7 @@ The demo pages give you an impression how this could be implemented:
 
 - [App Builder Tool](https://mstoecklein.github.io/nostr-apps/index.html)
 - [Example App](https://mstoecklein.github.io/nostr-apps/run.html?app=naddr1qq85setvd3hjq4m0wfkxggzpwpcqzymhwden5te0wfjkccte9eu8qtnvd9mx2q3qfa24a4gemqep2zhs60y5qmx33mrmctnh8kjkpnpk2hh48x2du42sxpqqqpaxj8yazkq)
+- [Publish Note from App](http://localhost:5502/site/run.html?app=naddr1qq8hqatzd35hx6pqv4mx2mn5yqeqzymhwden5te0wfjkccte9eu8qtnvd9mx2q3qfa24a4gemqep2zhs60y5qmx33mrmctnh8kjkpnpk2hh48x2du42sxpqqqpaxjvxadge)
 
 ## Behavior
 

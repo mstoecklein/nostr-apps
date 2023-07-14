@@ -259,6 +259,9 @@ export default function createPoolControl() {
         unsubscribe(id);
       }
     }
+    if ("pub" === type) {
+      
+    }
   });
 
   while (requestQueue.length) {

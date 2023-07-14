@@ -12,6 +12,7 @@ export default function () {
       if (!naddr?.startsWith("naddr")) return;
 
       const subscriberId = poolctl.subscribe((event, list) => {
+        console.log(event, list);
         if (event.kind === 31337) {
           const identifier = getTagValue(event, "d", "");
           const name = getTagValue(event, "name", identifier);
@@ -30,6 +31,10 @@ export default function () {
         const {
           data: { identifier, kind, pubkey, relays },
         } = nip19.decode(naddr);
+
+        console.log("identifier", identifier);
+        console.log("kind", kind);
+        console.log("pubkey", pubkey);
 
         poolctl.request(
           [

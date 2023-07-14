@@ -9,7 +9,9 @@ import profile from "./alpine/profile.js";
 import publishDialog from "./alpine/publishDialog.js";
 
 import poolSetup from "./PoolControl.js";
+import appRunner from "./AppRunner.js";
 poolSetup();
+appRunner();
 
 globalThis.addEventListener("alpine:init", () => {
   keypair();
